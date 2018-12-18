@@ -57,12 +57,13 @@ class Node(JenkinsBase):
             'jvm_options': str,
             'java_path': str,
             'prefix_start_slave_cmd': str,
-            'suffix_start_slave_cmd': str
+            'suffix_start_slave_cmd': str,
             'max_num_retries': int,
             'retry_wait_time': int,
             'retention': str ('Always' or 'OnDemand')
             'ondemand_delay': int (only for OnDemand retention)
             'ondemand_idle_delay': int (only for OnDemand retention)
+            'hostkey_verifiy': str ('None' or 'Known')
             'env': [
                 {
                     'key':'TEST',
@@ -124,6 +125,16 @@ class Node(JenkinsBase):
 
             retries = na['max_num_retries'] if 'max_num_retries' in na else ''
             re_wait = na['retry_wait_time'] if 'retry_wait_time' in na else ''
+            hostkey_verifiy = {
+                'stapler-class': 'hudson.plugins.sshslaves.verifiers.KnownHostsFileKeyVerificationStrategy',
+                '$class': 'hudson.plugins.sshslaves.verifiers.KnownHostsFileKeyVerificationStrategy',
+            }
+            if 'hostkey_verifiy' in na and na['hostkey_verifiy'].lower() == 'none':
+                hostkey_verifiy = {
+                    'stapler-class': 'hudson.plugins.sshslaves.verifiers.NonVerifyingKeyVerificationStrategy',
+                    '$class': 'hudson.plugins.sshslaves.verifiers.NonVerifyingKeyVerificationStrategy',
+                }
+
             launcher = {
                 'stapler-class': 'hudson.plugins.sshslaves.SSHLauncher',
                 '$class': 'hudson.plugins.sshslaves.SSHLauncher',
@@ -135,7 +146,8 @@ class Node(JenkinsBase):
                 'prefixStartSlaveCmd': na['prefix_start_slave_cmd'],
                 'suffixStartSlaveCmd': na['suffix_start_slave_cmd'],
                 'maxNumRetries': retries,
-                'retryWaitTime': re_wait
+                'retryWaitTime': re_wait,
+                'sshHostKeyVerificationStrategy':hostkey_verifiy,
             }
 
         retention = {
